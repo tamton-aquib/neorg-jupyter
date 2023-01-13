@@ -3,6 +3,8 @@
 A [neorg](https://github.com/nvim-neorg/neorg) module that allows integration with jupyter notebook inside a neorg file.<br />
 Pretty bare-bones right now.
 
+![jupyter](https://user-images.githubusercontent.com/77913442/212394503-4197470f-0802-49b3-9c4f-2919032d038a.mp4)
+
 ### Setup
 
 Set this inside neorg's setup.
