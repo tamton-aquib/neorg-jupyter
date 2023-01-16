@@ -2,11 +2,14 @@
 *  To-dos
    - ( ) State for each cells
    - ( ) A way to know outputs end
+   - ( ) Clean escape codes from stderr.
+
    - ( ) Commands
    -- ( ) `materialize` command to convert virtual lines to real
    -- ( ) command flag to execute and move to next block
    -- ( ) command to run all code blocks
    -- ( ) command to insert/delete blocks
+
    - ( ) Add readme
    - ( ) Configuration options
    - ( ) Image management (I have no idea)

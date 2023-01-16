@@ -1,5 +1,6 @@
 require("neorg.modules.base")
 
+---@diagnostic disable-next-line: undefined-global
 local module = neorg.modules.create("external.jupyter")
 local ts = require("nvim-treesitter.ts_utils")
 
@@ -26,6 +27,7 @@ end
 module.private = {
     cursor = 1,
     cells = {},
+    cell_counter = 1,
     ns = vim.api.nvim_create_namespace("jupyter_norgbook"),
 
     refresh = function()
@@ -35,6 +37,31 @@ module.private = {
             id = module.private.current,
             virt_lines = c.output
         })
+    end,
+
+    handle_line = function(_, data)
+        for _, line in ipairs(data) do
+
+            -- Cleaning the lines
+            if line:match("In %[1%]:") then vim.notify("Kernel started!") end
+
+            line = line
+                :gsub("In %[%d*%]: ", ""):gsub("Out%[%d*%]: ", "")
+                :gsub("%.%.%.: ", "")
+                :gsub("^%s*", ""):gsub("%s*$", "")
+
+            if line ~= "" then
+                local current = module.private.cells[module.private.current]
+
+                if current then
+                    table.insert(
+                        module.private.cells[module.private.current].output,
+                        {{line, "Identifier"}}
+                    )
+                    module.private.refresh()
+                end
+            end
+        end
     end,
 
     init = function()
@@ -47,24 +74,7 @@ module.private = {
 
         module.private.jobid = vim.fn.jobstart("ipython", {
             width = vim.o.columns,
-            on_stdout = function(_, data)
-                for _, line in ipairs(data) do
-
-                    -- Cleaning the lines
-                    line = line
-                        :gsub("In %[%d*%]: ", ""):gsub("Out%[%d*%]: ", "")
-                        :gsub("%.%.%.: ", "")
-                        :gsub("^%s*", ""):gsub("%s*$", "")
-                    if line ~= "" then
-                        local current = module.private.cells[module.private.current]
-
-                        if current then
-                            table.insert(module.private.cells[module.private.current].output, {{line, "Identifier"}})
-                            module.private.refresh()
-                        end
-                    end
-                end
-            end,
+            on_stdout = module.private.handle_line,
 
             -- Probably redundant
             on_exit = function() vim.notify("Kernel shut down!") end
@@ -131,8 +141,7 @@ module.public = {
             output = {}
         }
 
-        local nice = table.concat(content, "\n")
-        vim.api.nvim_chan_send(module.private.jobid, nice.."\n")
+        vim.api.nvim_chan_send(module.private.jobid, table.concat(content, '\n').."\n")
         module.private.current = id
     end
 }
