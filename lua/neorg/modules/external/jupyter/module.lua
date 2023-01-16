@@ -50,7 +50,7 @@ module.private = {
             line = line
                 :gsub("In %[%d*%]: ", ""):gsub("Out%[%d*%]: ", "")
                 :gsub("%.%.%.: ", "")
-                :gsub("%[%d?%d?;?%d?%d?;?%d?%d?%d?m", "")
+                :gsub("%[%d?%d?%d?;?%d?%d?%d?;?%d?%d?%d?;?%d?%d?%d?m", "")
                 :gsub("^%s*", ""):gsub("%s*$", "")
 
             if line ~= "" then
@@ -59,7 +59,7 @@ module.private = {
                 if current then
                     table.insert(
                         module.private.cells[module.private.current].output,
-                        {{line, "Identifier"}}
+                        {{line, "Function"}}
                     )
                     module.private.refresh()
                 end
