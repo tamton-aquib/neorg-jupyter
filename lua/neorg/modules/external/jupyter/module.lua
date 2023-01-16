@@ -50,6 +50,7 @@ module.private = {
             line = line
                 :gsub("In %[%d*%]: ", ""):gsub("Out%[%d*%]: ", "")
                 :gsub("%.%.%.: ", "")
+                :gsub("%[%d?%d?;?%d?%d?;?%d?%d?%d?m", "")
                 :gsub("^%s*", ""):gsub("%s*$", "")
 
             if line ~= "" then

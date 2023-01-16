@@ -2,7 +2,7 @@
 *  To-dos
    - ( ) State for each cells
    - ( ) A way to know outputs end
-   - ( ) Clean escape codes from stderr.
+   - (x) Clean escape codes from stderr.
 
    - ( ) Commands
    -- (x) `materialize` command to convert virtual lines to real
