@@ -5,12 +5,13 @@
    - ( ) Clean escape codes from stderr.
 
    - ( ) Commands
-   -- ( ) `materialize` command to convert virtual lines to real
+   -- (x) `materialize` command to convert virtual lines to real
+   -- (x) `hide` command to hide the output of a cell
    -- ( ) command flag to execute and move to next block
    -- ( ) command to run all code blocks
    -- ( ) command to insert/delete blocks
 
-   - ( ) Add readme
+   - (x) Add readme
    - ( ) Configuration options
    - ( ) Image management (I have no idea)
-   - ( ) Code cleanup
+   - (-) Code cleanup

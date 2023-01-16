@@ -18,6 +18,7 @@ module.load = function()
             subcommands = {
                 run = { args=0, name="jupyter.run" },
                 hide = { args=0, name="jupyter.hide" },
+                materialize = { args=0, name="jupyter.materialize" },
                 init = { args=0, name="jupyter.init" },
                 generate = { args=1, name="jupyter.generate" },
             }
@@ -131,6 +132,24 @@ module.public = {
         end
     end,
 
+    materialize = function()
+        local found_id, _ = module.public.current_node_details()
+
+        if found_id then
+            local c = module.private.cells[found_id]
+            vim.api.nvim_buf_del_extmark(0, module.private.ns, found_id)
+
+            local lines = vim.tbl_map(function(line) return vim.tbl_map(function(j) return j[1] end, line)[1] end, c.output)
+            local count = 1
+            vim.api.nvim_buf_set_lines(0, c["end"]+count, c["end"]+count, false, {"@output"})
+            for i=1,#lines do
+                vim.api.nvim_buf_set_lines(0, c["end"]+i+1, c["end"]+i+1, false, {lines[i]})
+            end
+            count = count + #lines
+            vim.api.nvim_buf_set_lines(0, c["end"]+count+1, c["end"]+count+1, false, {"@end"})
+        end
+    end,
+
     run = function()
         if not module.private.jobid then
             vim.notify("Kernel not initiated!\nRun `:Neorg jupyter init` to start the kernel.")
@@ -138,13 +157,7 @@ module.public = {
         end
 
         local found_id, code_block = module.public.current_node_details()
-
-        local id
-        if found_id then
-            id = found_id
-        else
-            id = vim.api.nvim_buf_set_extmark(0, module.private.ns, code_block["start"].row, 0, {})
-        end
+        local id = found_id or vim.api.nvim_buf_set_extmark(0, module.private.ns, code_block["start"].row, 0, {})
 
         module.private.cells[id] = {
             id = id,
@@ -163,6 +176,8 @@ module.on_event = function(event)
         vim.schedule(module.public.run)
     elseif event.split_type[2] == "jupyter.hide" then
         vim.schedule(module.public.hide)
+    elseif event.split_type[2] == "jupyter.materialize" then
+        vim.schedule(module.public.materialize)
     elseif event.split_type[2] == "jupyter.init" then
         vim.schedule(module.private.init)
     elseif event.split_type[2] == "jupyter.generate" then
@@ -174,6 +189,7 @@ module.events.subscribed = {
     ["core.neorgcmd"] = {
         ["jupyter.run"] = true,
         ["jupyter.hide"] = true,
+        ["jupyter.materialize"] = true,
         ["jupyter.init"] = true,
         ["jupyter.generate"] = true
     }
