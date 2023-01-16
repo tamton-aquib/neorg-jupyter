@@ -46,6 +46,7 @@ module.private = {
         end
 
         module.private.jobid = vim.fn.jobstart("ipython", {
+            width = vim.o.columns,
             on_stdout = function(_, data)
                 for _, line in ipairs(data) do
 
@@ -58,7 +59,7 @@ module.private = {
                         local current = module.private.cells[module.private.current]
 
                         if current then
-                            table.insert(module.private.cells[module.private.current].output, {{line, "Function"}})
+                            table.insert(module.private.cells[module.private.current].output, {{line, "Identifier"}})
                             module.private.refresh()
                         end
                     end
