@@ -17,6 +17,7 @@ module.load = function()
             args = 1,
             subcommands = {
                 run = { args=0, name="jupyter.run" },
+                hide = { args=0, name="jupyter.hide" },
                 init = { args=0, name="jupyter.init" },
                 generate = { args=1, name="jupyter.generate" },
             }
@@ -107,17 +108,10 @@ module.private = {
 }
 
 module.public = {
-    run = function()
-        if not module.private.jobid then
-            vim.notify("Kernel not initiated!\nRun `:Neorg jupyter init` to start the kernel.")
-            return
-        end
-
+    current_node_details = function()
         local node = ts.get_node_at_cursor(0, true)
         local p = module.required["core.integrations.treesitter"].find_parent(node, "^ranged_verbatim_tag$")
         local code_block = module.required["core.integrations.treesitter"].get_tag_info(p, true)
-
-        local content = code_block["content"]
 
         local found_id
         for kid, kidc in pairs(module.private.cells) do
@@ -126,6 +120,24 @@ module.public = {
                 break
             end
         end
+
+        return found_id, code_block
+    end,
+
+    hide = function()
+        local found_id, _ = module.public.current_node_details()
+        if found_id then
+            vim.api.nvim_buf_del_extmark(0, module.private.ns, found_id)
+        end
+    end,
+
+    run = function()
+        if not module.private.jobid then
+            vim.notify("Kernel not initiated!\nRun `:Neorg jupyter init` to start the kernel.")
+            return
+        end
+
+        local found_id, code_block = module.public.current_node_details()
 
         local id
         if found_id then
@@ -141,7 +153,7 @@ module.public = {
             output = {}
         }
 
-        vim.api.nvim_chan_send(module.private.jobid, table.concat(content, '\n').."\n")
+        vim.api.nvim_chan_send(module.private.jobid, table.concat(code_block["content"], '\n').."\n")
         module.private.current = id
     end
 }
@@ -149,6 +161,8 @@ module.public = {
 module.on_event = function(event)
     if event.split_type[2] == "jupyter.run" then
         vim.schedule(module.public.run)
+    elseif event.split_type[2] == "jupyter.hide" then
+        vim.schedule(module.public.hide)
     elseif event.split_type[2] == "jupyter.init" then
         vim.schedule(module.private.init)
     elseif event.split_type[2] == "jupyter.generate" then
@@ -159,6 +173,7 @@ end
 module.events.subscribed = {
     ["core.neorgcmd"] = {
         ["jupyter.run"] = true,
+        ["jupyter.hide"] = true,
         ["jupyter.init"] = true,
         ["jupyter.generate"] = true
     }
