@@ -31,6 +31,7 @@ module.private = {
     cells = {},
     cell_counter = 1,
     ns = vim.api.nvim_create_namespace("jupyter_norgbook"),
+    current_n = 0,
 
     refresh = function()
         local c = module.private.cells[module.private.current]
@@ -45,15 +46,22 @@ module.private = {
         for _, line in ipairs(data) do
 
             -- Cleaning the lines
-            if line:match("In %[1%]:") then vim.notify("Kernel started!") end
-
-            line = line
-                :gsub("In %[%d*%]: ", ""):gsub("Out%[%d*%]: ", "")
-                :gsub("%.%.%.: ", "")
-                :gsub("%[%d?%d?%d?;?%d?%d?%d?;?%d?%d?%d?;?%d?%d?%d?m", "")
-                :gsub("^%s*", ""):gsub("%s*$", "")
-
             if line ~= "" then
+                if line:match("In %[1%]:") then vim.notify("Kernel started!") end
+
+                -- TODO: numbers for each running block.
+                -- local line_matched = line:match("In %[(%d*)%]: ")
+                -- if line_matched then
+                    -- module.private.current_n = line_matched
+                    -- vim.pretty_print("Reached: "..line_matched)
+                -- end
+
+                line = line
+                    :gsub("In %[%d*%]: ", ""):gsub("Out%[%d*%]: ", "")
+                    :gsub("%.%.%.: ", "")
+                    :gsub("%[%d?%d?%d?;?%d?%d?%d?;?%d?%d?%d?;?%d?%d?%d?m", "")
+                    :gsub("^%s*", ""):gsub("%s*$", "")
+
                 local current = module.private.cells[module.private.current]
 
                 if current then
@@ -167,7 +175,7 @@ module.public = {
             output = {}
         }
 
-        vim.api.nvim_chan_send(module.private.jobid, table.concat(code_block["content"], '\n').."\n")
+        vim.api.nvim_chan_send(module.private.jobid, table.concat(code_block["content"], '\r').."\n")
         module.private.current = id
     end
 }
