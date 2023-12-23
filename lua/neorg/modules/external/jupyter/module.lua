@@ -1,6 +1,4 @@
-require("neorg.modules.base")
-
----@diagnostic disable-next-line: undefined-global
+local neorg = require("neorg.core")
 local module = neorg.modules.create("external.jupyter")
 local ts = require("nvim-treesitter.ts_utils")
 
